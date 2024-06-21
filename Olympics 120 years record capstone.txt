@@ -145,15 +145,15 @@ where	rnk<=5
 
 with medal_won as
 	(select  noc,
-			SUM(case when medal='Gold' then 1 else 0 end) as Gold,
-			SUM(case when medal='Silver' then 1 else 0 end) as Silver,
-			SUM(case when medal='Bronze' then 1 else 0 end) as Bronze
-	from	olympics_history
-	group	by 1)
+		 SUM(case when medal='Gold' then 1 else 0 end) as Gold,
+		 SUM(case when medal='Silver' then 1 else 0 end) as Silver,
+		 SUM(case when medal='Bronze' then 1 else 0 end) as Bronze
+	from	 olympics_history
+	group    by 1)
 select  r.region, m.gold, m.silver, m.bronze
 from	medal_won m
 join	olympics_history_noc_regions r
-on		m.noc=r.noc
+on	m.noc=r.noc
 order	by 2 desc, 3 desc, 4 desc
 		
 
@@ -174,60 +174,7 @@ order	by 2 desc, 3 desc, 4 desc
 
 ---------------------------------------------------------
 
-10. List down all the countries won at least 1 medal each.
--->>
-
-with medal_won as
-	(select  noc,
-			SUM(case when medal='Gold' then 1 else 0 end) as Gold,
-			SUM(case when medal='Silver' then 1 else 0 end) as Silver,
-			SUM(case when medal='Bronze' then 1 else 0 end) as Bronze
-	from	olympics_history
-	group	by 1),
-	 winning as
-		(select  r.region, m.gold, m.silver, m.bronze
-		from	medal_won m
-		join	olympics_history_noc_regions r
-		on		m.noc=r.noc
-		order	by 2 desc, 3 desc, 4 desc)
-select *
-from	winning
-where	gold>0 and silver>0 and bronze>0
-		
-		
-						    -----------OR-----------
-with gold_medal as
-		(select  noc,
-				count(medal) as Gold
-		from olympics_history 
-		where	medal = 'Gold'
-		group	by 1
-		order	by 2 desc),
-	 silver_medal as
-	 	(select  noc,
-				count(medal) as Silver
-		from olympics_history 
-		where	medal = 'Silver'
-		group	by 1
-		order	by 2 desc),
-	 bronze_medal as
-	 	(select  noc,
-				count(medal) as Bronze
-		from olympics_history 
-		where	medal = 'Bronze'
-		group	by 1
-		order	by 2 desc)
-
-select  r.region as country, g.gold, s.silver, b.bronze
-from	gold_medal g
-join	silver_medal s on g.noc = s.noc
-join	bronze_medal b on s.noc = b.noc
-join	olympics_history_noc_regions r on g.noc=r.noc
-order	by g.gold desc, s.silver desc, b.bronze desc 
-
------------------------------------------------------------
-
-11. List down total gold, silver and bronze medals won by each country corresponding to each olympic games.
+10. List down total gold, silver and bronze medals won by each country corresponding to each olympic games.
 -->>
 
   with medal_won_each_olympic as
@@ -240,19 +187,19 @@ order	by g.gold desc, s.silver desc, b.bronze desc
 Select  m.games, r.region, m.gold, m.silver, m.bronze
 from	medal_won_each_olympic m
 join	olympics_history_noc_regions r
-on		m.noc=r.noc
+on	m.noc=r.noc
 order 	by 1, 2
 
 -------------------------------------------------------
 
-12. Identify which country won the most gold, most silver and most bronze medals in each olympic games.
+11. Identify which country won the most gold, most silver and most bronze medals in each olympic games.
 -->>
 
 with medal_won as
-	(select  h.games , r.region as country,
-			sum(case when medal='Gold' then 1 else 0 end) as Gold,
-			sum(case when medal='Bronze' then 1 else 0 end) as Bronze,
-			sum(case when medal='Silver' then 1 else 0 end) as Silver
+	(select h.games , r.region as country,
+		sum(case when medal='Gold' then 1 else 0 end) as Gold,
+		sum(case when medal='Bronze' then 1 else 0 end) as Bronze,
+		sum(case when medal='Silver' then 1 else 0 end) as Silver
 	from	olympics_history h
 	join	olympics_history_noc_regions r
 	on		h.noc=r.noc
@@ -274,18 +221,18 @@ order 	by 1
 
 -------------------------------------------------------------
 
-13. Identify which country won the most gold, most silver, most bronze medals and the most medals in each olympic games.
+12. Identify which country won the most gold, most silver, most bronze medals and the most medals in each olympic games.
 -->>
 
 with medal_won as
 	(select  h.games , r.region as country,
-			sum(case when medal='Gold' then 1 else 0 end) as Gold,
-			sum(case when medal='Bronze' then 1 else 0 end) as Bronze,
-			sum(case when medal='Silver' then 1 else 0 end) as Silver,
-	 		sum(case when medal<>'NA' then 1 else 0 end) as total_medals
+		sum(case when medal='Gold' then 1 else 0 end) as Gold,
+		sum(case when medal='Bronze' then 1 else 0 end) as Bronze,
+		sum(case when medal='Silver' then 1 else 0 end) as Silver,
+	 	sum(case when medal<>'NA' then 1 else 0 end) as total_medals
 	from	olympics_history h
 	join	olympics_history_noc_regions r
-	on		h.noc=r.noc
+	on	h.noc=r.noc
 	group	by 1,2
 	order 	by 1, 2)
 
@@ -307,14 +254,14 @@ order 	by 1;
 
 -------------------------------------------------------------
 
-14. Which countries have never won gold medal but have won silver/bronze medals?
+13. Which countries have never won gold medal but have won silver/bronze medals?
 -->>
 
 with medal_won as
 		(select  r.region, 
-				 sum(case when medal='Gold' then 1 else 0 end) as Gold,
-				 sum(case when medal='Silver' then 1 else 0 end) as Silver,
-				 sum(case when medal='Bronze' then 1 else 0 end) as Bronze
+			 sum(case when medal='Gold' then 1 else 0 end) as Gold,
+			 sum(case when medal='Silver' then 1 else 0 end) as Silver,
+			 sum(case when medal='Bronze' then 1 else 0 end) as Bronze
 		 from	 olympics_history h
 		 join	 olympics_history_noc_regions r
 		 on	 	 r.noc=h.noc
@@ -323,32 +270,30 @@ select  *
 from	medal_won
 where	gold=0 and (silver>0 or bronze>0)
 
-							--------------- OR --------------
+						----------- OR -----------
 
 select * from (
     	SELECT country, coalesce(gold,0) as gold, coalesce(silver,0) as silver, coalesce(bronze,0) as bronze
-    		FROM CROSSTAB('SELECT nr.region as country
-    					, medal, count(medal) as total_medals
-    					FROM OLYMPICS_HISTORY oh
-    					JOIN OLYMPICS_HISTORY_NOC_REGIONS nr ON nr.noc=oh.noc
-    					where medal <> ''NA''
-    					GROUP BY nr.region,medal order BY nr.region,medal',
+    		FROM CROSSTAB('SELECT nr.region as country, medal, count(medal) as total_medals
+    				FROM OLYMPICS_HISTORY oh
+    				JOIN OLYMPICS_HISTORY_NOC_REGIONS nr ON nr.noc=oh.noc
+    				where medal <> ''NA''
+    				GROUP BY nr.region,medal order BY nr.region,medal',
                     'values (''Bronze''), (''Gold''), (''Silver'')')
-    		AS FINAL_RESULT(country varchar,
-    		bronze bigint, gold bigint, silver bigint)) x
+    		AS FINAL_RESULT(country varchar, bronze bigint, gold bigint, silver bigint)) x
     where gold = 0 and (silver > 0 or bronze > 0)
     order by gold desc nulls last, silver desc nulls last, bronze desc nulls last;
 
 --------------------------------------------------------------
 
-15. In which Sport/event, India has won highest medals.
+14. In which Sport/event, India has won highest medals.
 -->>
 
 with india_won_medals as 
 		(select  sport, count(medal) as medal_won
 		from  	olympics_history h
 		join	olympics_history_noc_regions r
-		on		h.noc=r.noc
+		on	h.noc=r.noc
 		where	r.region='India' and medal<>'NA'
 		group	by 1),
 	 medals as
@@ -368,29 +313,29 @@ with india_won_medals as
 		where	r.region='India' and medal<>'NA'
 		group	by 1)
 select  first_rank(sport) over (order by medal_won desc) as sports,
-            first_rank(medal_won) over (order by medal_won desc) as most_medals
+        first_rank(medal_won) over (order by medal_won desc) as most_medals
 from   india_won_medals
 
 						-------OR-------
 
 select sport, count(medal) as medal_won
 from   olympics_history h
-join     olympics_history_noc_regions r
-on       h.noc=r.noc
+join   olympics_history_noc_regions r
+on     h.noc=r.noc
 where  r.region ='India' and medal<>'NA'
 group  by 1
-order   by 2 desc
-limit    1
+order  by 2 desc
+limit  1
 
 --------------------------------------------------------
 
-16. Break down all olympic games where India won medal for Hockey and how many medals in each olympic games
+15. Break down all olympic games where India won medal for Hockey and how many medals in each olympic games
 -->>
 
 select  r.region as country, sport, games, count(medal) as medals_won
 from	olympics_history h
 join	olympics_history_noc_regions r
-on		h.noc=r.noc
+on	h.noc=r.noc
 where	r.region='India' and medal<>'NA' and sport = 'Hockey'
 group	by 1,2,3
 order	by 3
